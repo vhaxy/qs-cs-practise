@@ -1,100 +1,72 @@
+const { findSourceMap } = require("module");
 const readline = require("readline");
 
 const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
+	input: process.stdin,
+	output: process.stdout,
 });
 
 function getName(studentName) {
-  return new Promise((resolve) => {
-    rl.question(studentName, (input) => resolve(String(input)));
-  });
+	return new Promise((resolve) => {
+		rl.question(studentName, (input) => resolve(String(input)));
+	});
 }
 
 function getSubjectChoice(subject) {
-  return new Promise((resolve) => {
-    rl.question(subject, (input) => resolve(String(input)));
-  });
+	return new Promise((resolve) => {
+		rl.question(subject, (input) => resolve(String(input)));
+	});
 }
 
-async function main() {
-  const physClass = [];
-  const chemClass = [];
-  const hisClass = [];
-  const geoClass = [];
-  const csClass = [];
+function main() {
+	const classes = {
+		math: [],
+		art: [],
+		law: [],
+	};
 
-  const students = [];
+	function validateInput(input) {
+		if (!input || input.trim() === "") {
+			return false;
+		}
+		if (input.includes("  ")) {
+			return false;
+		}
+		for (let char of input) {
+			if (!/[a-zA-Z\s]/.test(char)) {
+				return false;
+			}
+		}
+		return true;
+	}
 
-  const subjectsCounter = [
-    {
-      subject: "Physics",
-      counter: 0,
-      subject: "Chemistry",
-      counter: 0,
-      subject: "History",
-      counter: 0,
-      subject: "Geography",
-      counter: 0,
-      subject: "Computer Science",
-      counter: 0,
-    },
-  ];
+	function validateSubjectChoice(input) {
+		return input in classes;
+	}
 
-  function checkMaxSize(subjectClass) {
-    for (let i = 0; i < subjectClass.length; i++) {
-      if (subjectClass.length > 20) {
-        return True;
-      } else {
-        return False;
-      }
-    }
-  }
+	async function enterStudents() {
+		let studentName = await getName("Enter student's name: ");
+		while (!validateInput(studentName)) {
+			studentName = await getName("Invalid entry, enter student's name: ");
+		}
 
-  function checkMinSize(subjectClass) {
-    for (let i = 0; i < subjectClass.length; i++) {
-      if (subjectClass.length < 10) {
-        return True;
-      } else {
-        return False;
-      }
-    }
-  }
+		let firstChoice = await getSubjectChoice("Enter 1st subject choice: ");
+		while (!validateInput(firstChoice) || !validateSubjectChoice(firstChoice)) {
+			firstChoice = await getSubjectChoice("Re-enter 1st subject choice: ");
+		}
 
-  async function enterStudents() {
-    for (let i = 0; i < 2; i++) {
-      const student = new Object();
-
-      const studentName = await getName("Enter student name: ");
-      const firstChoice = await getSubjectChoice("Enter your choice subject: ");
-      const secondChoice = await getSubjectChoice(
-        "Enter your choice subject: "
-      );
-
-      // const student = {}
-      student.name = studentName;
-      student.firstChoice = firstChoice;
-      student.secondChoice = secondChoice;
-
-      students.push(student);
-    }
-  }
-
-  function calculateChosenSubjects(students) {
-    for (let i = 0; i < students.length; i++) {
-        if (students.firstChoice === subjectsCounter.subject) {
-            subjectsCounter.counter += 1
-        }
-    }
-  }
-
-  await enterStudents()
-  
-  calculateChosenSubjects()
-
-  console.log(students);
-
-  rl.close();
+		let secondChoice = await getSubjectChoice("Enter 2nd subject choice: ");
+		while (
+			!validateInput(secondChoice) ||
+			!validateSubjectChoice(secondChoice) ||
+			secondChoice === firstChoice
+		) {
+			secondChoice = await getSubjectChoice("Re-enter 2nd subject choice: ");
+		}
+		console.log(`\n${studentName}: ${firstChoice}, ${secondChoice}\n`);
+		rl.close();
+	}
+	enterStudents();
 }
 
 main();
